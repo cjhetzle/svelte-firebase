@@ -1,4 +1,5 @@
 <script lang="ts">
+	import UserLink from '$lib/components/UserLink.svelte';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -15,10 +16,12 @@
 	</h1>
 	<img src={data.photoURL ?? '/user.png'} alt="photoURL" width="256" class="mx-auto" />
 
-    <p class="text-xl my-8">{data.bio ?? "no bio yet..."}</p>
-    <ul class="list-none">
-        {#each data.links as item}
-            {@debug item}
-        {/each}
-    </ul>
+	<p class="text-xl my-8">{data.bio ?? 'no bio yet...'}</p>
+	<ul class="list-none">
+		{#each data.links as item}
+			<li>
+				<UserLink {...item} />
+			</li>
+		{/each}
+	</ul>
 </main>

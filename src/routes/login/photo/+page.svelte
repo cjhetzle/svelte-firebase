@@ -1,32 +1,30 @@
 <script lang="ts">
 	import AuthCheck from '$lib/components/AuthCheck.svelte';
-	import { db, storage, user, userData } from '$lib/firebase';
+	import { user, userData, storage, db } from '$lib/firebase';
 	import { doc, updateDoc } from 'firebase/firestore';
 	import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 
-    let previewURL: string;
-    let uploading = false;
-    let uploaded = $userData?.photoURL ? true : false;
+	let previewURL: string;
+	let uploading = false;
+	$: href = `/${$userData?.username}/edit`;
 
-    async function upload(e: any) {
-        uploading = true;
-        uploaded = false;
-        const file = e.target.files[0];
-        previewURL = URL.createObjectURL(file);
-        const storageRef = ref(storage, `users/${$user?.uid}/profile.png`);
-        const result = await uploadBytes(storageRef, file);
-        const url = await getDownloadURL(result.ref);
+	async function upload(e: any) {
+		uploading = true;
+		const file = e.target.files[0];
+		previewURL = URL.createObjectURL(file);
+		const storageRef = ref(storage, `users/${$user!.uid}/profile.png`);
+		const result = await uploadBytes(storageRef, file);
+		const url = await getDownloadURL(result.ref);
 
-        await updateDoc(doc(db, 'users', $user!.uid), { photoURL: url });
-        uploading = false;
-        uploaded = true;
-    }
-
+		await updateDoc(doc(db, 'users', $user!.uid), { photoURL: url });
+		uploading = false;
+	}
 </script>
 
 <AuthCheck>
 	<h2 class="card-title">Upload a Profile Photo</h2>
-	<form action="" class="max-w-screen-md w-full">
+
+	<form class="max-w-screen-md w-full">
 		<div class="form-control w-full max-w-xs my-10 mx-auto text-center">
 			<img
 				src={previewURL ?? $userData?.photoURL ?? '/user.png'}
@@ -45,14 +43,12 @@
 				class="file-input file-input-bordered w-full max-w-xs"
 				accept="image/png, image/jpeg, image/gif, image/webp"
 			/>
-            <div class="my-2 mx-auto">
-            {#if uploaded}
-                <a class="btn btn-success text-white" href="/{$userData?.username}">FINISH</a>
-            {/if}
-            {#if uploading}
-                <div class="alert alert-info">Uploading...</div>
-            {/if}
-            </div>
+			{#if uploading}
+				<p>Uploading...</p>
+				<progress class="progress progress-info w-56 mt-6" />
+			{/if}
 		</div>
 	</form>
+
+	<a {href} class="btn btn-primary"> Finish </a>
 </AuthCheck>
